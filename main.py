@@ -1,4 +1,5 @@
 import requests, json, threading, time
+from concurrent.futures import ThreadPoolExecutor
 
 file_lock = threading.Lock()
 first_object = [True]
@@ -22,14 +23,8 @@ def extract_data(number):
     with open('data.json', 'w') as file:
         file.write('[')
 
-    threads = []
-    for n in range(1, number+1):
-        thread = threading.Thread(target=write_to_json, args=(n,))
-        threads.append(thread)
-        thread.start()
-
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor() as executor:
+        executor.map(write_to_json, range(1, number+1))
 
     with open('data.json', 'a') as file:
         file.write(']')
